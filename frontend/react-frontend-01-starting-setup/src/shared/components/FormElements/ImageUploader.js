@@ -30,7 +30,7 @@ const ImageUploader = (props) => {
         let fileIsValid = isValid;
         let pickedFile;
 
-        if (files && files.length === 1 || file) {
+        if ((files && files.length === 1) || file) {
             pickedFile = files[0] || file;
             setFile(pickedFile);
             setIsValid(true);

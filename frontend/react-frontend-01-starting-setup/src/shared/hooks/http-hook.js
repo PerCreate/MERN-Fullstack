@@ -1,8 +1,10 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/auth-context';
 
 export const useHttpClient = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState();
+    const auth = useContext(AuthContext);
 
     const activeHttpRequests = useRef([]);
 
@@ -11,6 +13,8 @@ export const useHttpClient = () => {
             setIsLoading(true);
             const httpAbortController = new AbortController();
             activeHttpRequests.current.push(httpAbortController);
+
+            headers = { ...headers, Authorization: 'Bearer ' + auth.token };
 
             try {
                 const response = await fetch(url, {

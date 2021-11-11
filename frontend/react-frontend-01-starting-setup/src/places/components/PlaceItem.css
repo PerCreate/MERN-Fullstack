@@ -15,12 +15,13 @@
   width: 100%;
   height: 12.5rem;
   margin-right: 1.5rem;
+  background-color: rgb(90, 89, 89);
 }
 
 .place-item__image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit:contain;
 }
 
 .place-item__info h2,

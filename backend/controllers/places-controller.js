@@ -1,4 +1,5 @@
-const uuid = require('uuid/dist/v4');
+const fs = require('fs');
+const { v4: uuid } = require('uuid');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 
@@ -114,6 +115,11 @@ const updatePlace = async (req, res, next) => {
     place.title = title;
     place.description = description;
 
+    if (req.userData.userId !== place.creator.toString()) {
+        const error = new HttpError('You are not allowed to edit this place.', 401);
+        return next(error);
+    }
+
     try {
         await place.save();
     } catch (err) {
@@ -140,6 +146,8 @@ const deletePlace = async (req, res, next) => {
         return next(error);
     }
 
+    const imagePath = place.image;
+
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
@@ -152,6 +160,8 @@ const deletePlace = async (req, res, next) => {
         const error = new HttpError('Could not delete that place.', 404);
         return next(error);
     }
+
+    fs.unlink(imagePath, err => console.log(err));
 
     res.status(200).json({ message: 'Deleted place.' });
 };

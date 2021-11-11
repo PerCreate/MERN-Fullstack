@@ -1,5 +1,7 @@
-const uuid = require('uuid/dist/v4');
+const { v4: uuid } = require('uuid');
 const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const HttpError = require('../models/http-error');
 const User = require('../models/user');
@@ -33,14 +35,21 @@ const signup = async (req, res, next) => {
         return next(error);
     }
     if (existingUser) {
-        const error = new HttpError('Could not create user, email already exists', 422);
+        const error = new HttpError('Could not create user, email already exists');
         return next(error);
+    }
+
+    let hashedPassword;
+    try {
+        hashedPassword = await bcrypt.hash(password, 12);
+    } catch (err) {
+
     }
 
     const createdUser = new User({
         name,
         email,
-        password,
+        password: hashedPassword,
         image: req.file.path,
         places: []
     });
@@ -51,31 +60,71 @@ const signup = async (req, res, next) => {
         const error = new HttpError('Something went wrong, could not create user.', 500);
         return next(error);
     }
-    res.status(201).json({ place: createdUser });
+
+    let token;
+    try {
+        token = jwt.sign(
+            { userId: createdUser.id, email: createdUser.email },
+            'supersecret_dont_share',
+            { expiresIn: '1h' }
+        );
+    } catch (err) {
+        const error = new HttpError('Signing up failed, please try again later.');
+        return next(error);
+    }
+
+    res.status(201).json({ userId: createdUser.id, email: createdUser.email, token });
 };
 
 const login = async (req, res, next) => {
     const { email, password } = req.body;
 
-    let user;
+    let existingUser;
     try {
-        user = await User.findOne({ email: email });
+        existingUser = await User.findOne({ email: email });
     } catch (err) {
         const error = new HttpError('Something went wrong, try later.', 401);
         return next(error);
     }
 
-    if (!user) {
+    if (!existingUser) {
         const error = new HttpError('User with this email is not exist.', 401);
         return next(error);
     }
-    if (user.password !== password) {
-        const error = new HttpError('Incorrect password entered', 401);
+
+    let isValidPassword = false;
+
+    try {
+        isValidPassword = await bcrypt.compare(password, existingUser.password);
+    } catch (err) {
+        const error = new HttpError('Could not log you in, please check your credentials and try again', 500);
         return next(error);
     }
-    else {
-        res.status(201).json({ message: 'Logged in!', user: user.toObject({ getters: true }) });
+
+    if (!isValidPassword) {
+        const error = new HttpError('Incorrect password entered', 500);
+        return next(error);
     }
+
+    let token;
+    try {
+        token = jwt.sign(
+            { userId: existingUser.id, email: existingUser.email },
+            'supersecret_dont_share',
+            { expiresIn: '1h' }
+        );
+    } catch (err) {
+        const error = new HttpError('Logging in failed, please try again later.');
+        return next(error);
+    }
+
+
+    res.status(201).json({
+        userId: existingUser.id,
+        email: existingUser.email,
+        token
+    });
+
 };
 
 module.exports = {

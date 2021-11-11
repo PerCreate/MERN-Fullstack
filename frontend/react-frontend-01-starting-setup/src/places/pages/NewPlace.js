@@ -55,7 +55,7 @@ const NewPlace = () => {
 
             await sendRequest('http://localhost:3000/api/places',
                 'POST',
-                formData
+                formData,
             );
             history.push('/');
         } catch (err) { }

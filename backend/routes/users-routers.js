@@ -15,7 +15,9 @@ router.post('/signup',
             .not()
             .isEmpty(),
         check('email')
-            .normalizeEmail()
+            .normalizeEmail({
+                gmail_remove_dots: false
+            })
             .isEmail(),
         check('password')
             .isLength({ min: 6 })
