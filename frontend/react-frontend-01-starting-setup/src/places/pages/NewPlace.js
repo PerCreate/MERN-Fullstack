@@ -53,7 +53,7 @@ const NewPlace = () => {
             formData.append('image', formState.inputs.image.value);
             formData.append('creator', auth.userId);
 
-            await sendRequest('http://localhost:3000/api/places',
+            await sendRequest(process.env.REACT_APP_BACKEND_URL + '/places',
                 'POST',
                 formData,
             );

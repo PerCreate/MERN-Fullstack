@@ -1,13 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Redirect, Switch } from 'react-router-dom';
 
+import MainNavigation from './shared/components/Navigation/MainNavigation';
+import { AuthContext } from './shared/context/auth-context';
+
 import Users from './user/pages/Users';
 import NewPlace from './places/pages/NewPlace';
 import UserPlaces from './places/pages/UserPlaces';
-import MainNavigation from './shared/components/Navigation/MainNavigation';
 import UpdatePlace from './places/pages/UpdatePlace';
 import Auth from './user/pages/Auth';
-import { AuthContext } from './shared/context/auth-context';
 
 const App = () => {
   const [token, setToken] = useState(false);

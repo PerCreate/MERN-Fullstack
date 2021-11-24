@@ -77,7 +77,7 @@ const createPlace = async (req, res, next) => {
         const error = new HttpError('Could find user for provided id.', 500);
         return next(error);
     }
-
+    console.log(user);
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
